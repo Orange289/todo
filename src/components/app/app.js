@@ -16,7 +16,40 @@ export default class App extends Component {
       this.createTodoItem('Drink Coffee'),
       this.createTodoItem('Build React App'),
       this.createTodoItem('Have a Lunch')
-    ]
+    ],
+    term: '',
+    filter: 'all'
+  };
+
+  search(items, term) {
+    if (term.length === 0) {
+      return items;
+    };
+
+    return items.filter((item) => {
+      return item.label.toLowerCase().indexOf(term.toLowerCase()) > -1;
+    })
+  };
+
+  filter(items, filter) {
+    switch(filter) {
+      case 'all':
+        return items;
+      case 'active':
+        return items.filter((item) => !item.done);
+      case 'done':
+        return items.filter((item) => item.done);
+      default:
+        return items;
+    }
+  };
+
+  onSearchChange = (term) => {
+    this.setState({ term });
+  };
+
+  onFilterChange = (filter) => {
+    this.setState({ filter });
   };
 
   createTodoItem(label) {
@@ -116,7 +149,7 @@ export default class App extends Component {
   };
 
   render() {
-    const { todoData } = this.state;
+    const { todoData, term, filter } = this.state;
     const doneCount = todoData.filter((el) => el.done).length; // filter создает новый массив, поэтому стейт мы не меняем, всё ок
     const todoCount = todoData.length - doneCount;
 
@@ -124,12 +157,15 @@ export default class App extends Component {
       <div className="todo-app">
         <AppHeader toDo={todoCount} done={doneCount} />
         <div className="top-panel d-flex">
-          <SearchPanel />
-          <ItemStatusFilter />
+          <SearchPanel
+            onSearchChange={this.onSearchChange} />
+          <ItemStatusFilter
+            filter={filter}
+            onFilterChange={this.onFilterChange} />
         </div>
 
         <TodoList
-          todos={todoData}
+          todos={this.filter(this.search(todoData, term), this.state.filter)}
           onDeleted={this.deleteItem}
           onToggleImportant={this.onToggleImportant}
           onToggleDone={this.onToggleDone}
